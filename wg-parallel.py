@@ -28,7 +28,7 @@ class Application:
 		srcArticleName = sys.argv[1].replace(" ","_")
 		dstArticleName = sys.argv[2].replace(" ","_")
 
-		self.queue.put( {"src":srcArticleName, "depth":0, "dst":dstArticleName,"route":list()} )
+		self.queue.put( {"src":srcArticleName, "depth":1, "dst":dstArticleName,"route":list()} )
 		
 		num_worker_threads = 5
 		threads=list()
