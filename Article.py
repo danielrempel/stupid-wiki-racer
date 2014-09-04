@@ -3,9 +3,9 @@ from http.client import HTTPConnection, HTTPResponse
 from html.parser import HTMLParser
 
 class Article:
-	def __init__(self,articleName,articleLinks=list()):
+	def __init__(self,articleName):
 		self.articleName = articleName
-		self.articleLinks = articleLinks
+		self.articleLinks = list()
 		self.populateArticle()
 		
 		self.checked=False

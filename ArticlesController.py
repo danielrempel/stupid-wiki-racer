@@ -12,17 +12,17 @@ class ArticlesController:
 		self.articlesList=list()
 		
 		self.articlesChecked=0
-	def getArticle(self,name,links=list()):
-		return self.addArticle(name,links)
+	def getArticle(self,name):
+		return self.addArticle(name)
 	def getArticlesList(self):
 		return self.articlesList
-	def addArticle(self,name,links=list()):
+	def addArticle(self,name):
 		for article in self.articlesList:
 			if(article != None):
 				if(article.getArticleName() == name):
 					return article
 		self.articlesChecked+=1
-		self.articlesList.append(Article(name,links))
+		self.articlesList.append(Article(name))
 		return self.articlesList[len(self.articlesList)-1]
 	
 	def getArticlesCheckedCount(self):
