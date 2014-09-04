@@ -1,6 +1,6 @@
 from Article import Article
 
-class ArticlesController:
+class ArticlesController:	
 	__instance = None
 	@staticmethod
 	def getInstance():
@@ -10,6 +10,8 @@ class ArticlesController:
 		
 	def __init__(self):
 		self.articlesList=list()
+		
+		self.articlesChecked=0
 	def getArticle(self,name,links=list()):
 		return self.addArticle(name,links)
 	def getArticlesList(self):
@@ -19,5 +21,9 @@ class ArticlesController:
 			if(article != None):
 				if(article.getArticleName() == name):
 					return article
+		self.articlesChecked+=1
 		self.articlesList.append(Article(name,links))
 		return self.articlesList[len(self.articlesList)-1]
+	
+	def getArticlesCheckedCount(self):
+		return self.articlesChecked

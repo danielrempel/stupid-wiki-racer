@@ -26,6 +26,8 @@ class Application:
 			print("iteration", i+1,"staring")
 		print(srcArticleName)
 		print()
+		
+		print("After checking",ArticlesController.getInstance().getArticlesCheckedCount(),"articles")
 	
 	def search(self, src, depth, dst):
 		ArticlesController.getInstance().getArticle(src)

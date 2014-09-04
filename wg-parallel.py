@@ -41,6 +41,7 @@ class Application:
 		#self.queue.join()
 		for thread in threads:
 			thread.join()
+		print("After checking",ArticlesController.getInstance().getArticlesCheckedCount(),"articles")
 	
 	def search(self, src, depth, dst, route=list()):
 		if(len(route)>0):
@@ -49,7 +50,6 @@ class Application:
 			print("searching", src,"to",dst)
 		
 		myroute = route[:]
-		#myroute = copy.deepcopy(route)
 		myroute.append(src)
 		
 		for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
