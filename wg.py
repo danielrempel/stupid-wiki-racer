@@ -5,6 +5,8 @@ import io
 import re
 from http.client import HTTPConnection, HTTPResponse
 from html.parser import HTMLParser
+from queue import Queue,Empty
+from threading import Thread
 
 class Application:
 	
@@ -12,6 +14,13 @@ class Application:
 	
 	def __init__(self):
 		ArticlesController.getInstance()
+		self.running = True
+		self.queue = Queue()
+
+	def isRunning(self):
+		return self.running
+	def stopRunning(self):
+		self.running = False
 
 	def run(self):
 		if(len(sys.argv)<3):
@@ -20,26 +29,45 @@ class Application:
 		srcArticleName = sys.argv[1].replace(" ","_")
 		dstArticleName = sys.argv[2].replace(" ","_")
 
-		i=0
-		print("iteration", i+1,"staring")
-		while(not self.search(srcArticleName,i,dstArticleName)):
-			i+=1
-			print("iteration", i+1,"staring")
-		print(srcArticleName)
-		print()
+		self.queue.put( {"src":srcArticleName, "depth":1, "dst":dstArticleName,"route":list()} )
+		
+		num_worker_threads = 5
+		threads=list()
+		for i in range(num_worker_threads):
+			t = Thread(target=self.worker)
+			t.daemon = True
+			t.start()
+			threads.append(t)
+		
+		#self.queue.join()
+		for thread in threads:
+			thread.join()
 	
-	def search(self, src, depth, dst):
-		ArticlesController.getInstance().getArticle(src)
+	def search(self, src, depth, dst, route=list()):
+		print("searching", src,"to",dst)
+		
+		myroute = route[:]
+		myroute.append(src)
+		
 		for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
 			if(article == dst):
-				print(article)
-				return True
+				print(myroute, article)
+				self.stopRunning()
+				return
+		
 		if(depth>0):
 			for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
-				if(self.search(article,depth-1,dst) == True):
-					print(article)
-					return True
-		return False
+				self.queue.put( {"src":article, "depth":depth-1, "dst":dst,"route":myroute} )
+
+	def worker(self):
+		print("Worker ready")
+		while self.running:
+			try:
+				task = self.queue.get(True,2)
+				self.search(task['src'],task['depth'],task['dst'],task['route'])
+				self.queue.task_done()
+			except Empty:
+				print("Worker: no tasks")
 
 class Article:
 	def __init__(self,articleName,articleLinks=list()):
