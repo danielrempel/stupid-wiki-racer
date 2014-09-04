@@ -5,8 +5,6 @@ import io
 import re
 from http.client import HTTPConnection, HTTPResponse
 from html.parser import HTMLParser
-import json
-import atexit
 
 class Application:
 	
@@ -14,21 +12,14 @@ class Application:
 	
 	def __init__(self):
 		ArticlesController.getInstance()
-		atexit.register(ArticlesController.getInstance().serialize)
-	
-	def runWithArgs(self,arg1,arg2):
-		sys.argv.extend([arg1,arg2])
-		self.run()
-	
+
 	def run(self):
 		if(len(sys.argv)<3):
 			quit(1)
 		
 		srcArticleName = sys.argv[1].replace(" ","_")
 		dstArticleName = sys.argv[2].replace(" ","_")
-		#srcArticle = ArticlesController.getInstance().addArticle(srcArticleName)
-		#dstArticle = ArticlesController.getInstance().addArticle(dstArticleName)
-		
+
 		i=0
 		print("iteration", i+1,"staring")
 		while(not self.search(srcArticleName,i,dstArticleName)):
@@ -38,13 +29,8 @@ class Application:
 		print()
 	
 	def search(self, src, depth, dst):
-		#print("Check ", src)
-		ArticlesController.getInstance().getArticle(src).populateArticle()
-		#if( ArticlesController.getInstance().getArticle(src).isLinkedTo(ArticlesController.getInstance().getArticle(dst)) ):
-		#	print(dst)
-		#	return True
+		ArticlesController.getInstance().getArticle(src)
 		for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
-			#print("Compare", article,"to",dst,"(",src,")")
 			if(article == dst):
 				print(article)
 				return True
@@ -56,18 +42,19 @@ class Application:
 		return False
 
 class Article:
-	def __init__(self,articleName,articleLinks=list(),download=True):
+	def __init__(self,articleName,articleLinks=list()):
 		self.articleName = articleName
 		self.articleLinks = articleLinks
-		self.populated = False
-		if(download):
-			self.populateArticle()
-		if(len(self.articleLinks)>0 and not download):
-			self.populated = True
+		self.populateArticle()
 	def populateArticle(self):
-		#if(self.populated):
-		#	return
-		articleText = ArticlesController.getInstance().downloadText(self)
+		wikiconnection = HTTPConnection("en.wikipedia.org")
+		wikiconnection.request("GET","/wiki/"+self.articleName)
+		articleResponse = wikiconnection.getresponse()
+		print(self.articleName,"request status:",articleResponse.status)
+		if(articleResponse.status!=200):
+			print("Error!")
+			quit(1)
+		articleText = articleResponse.read()
 		
 		class ArticleParser(HTMLParser):
 			def __init__(self, parentArticle):
@@ -100,23 +87,11 @@ class Article:
 		
 		articleParser = ArticleParser(self)
 		articleParser.feed(articleText.decode("utf-8"))
-		self.populated = True
 
 	def getArticleName(self):
 		return self.articleName
 	def getLinkedArticlesNames(self):
 		return self.articleLinks
-	def getLinkedArticles(self):
-		ret = list()
-		for articleName in self.articleLinks:
-			ret.append(ArticlesController.getInstance().getArticle(articleName,[self]))
-		return ret
-	def isLinkedTo(self,otherArticle):
-		for linkedArticleName in self.articleLinks:
-			#if(otherArticle.getArticleName() == "Air_quality"):
-			if(linkedArticleName == otherArticle.getArticleName()):
-				return True
-		return False
 	def addLinkTo(self,otherArticleName):
 		for linkedArticleName in self.articleLinks:
 			if(linkedArticleName == otherArticleName):
@@ -130,55 +105,20 @@ class ArticlesController:
 	def getInstance():
 		if(ArticlesController.__instance == None):
 			ArticlesController.__instance = ArticlesController()
-			ArticlesController.__instance.deserialize()
 		return ArticlesController.__instance
 		
 	def __init__(self):
 		self.articlesList=list()
-		self.wikiconnection = HTTPConnection("en.wikipedia.org")
-	def downloadText(self,article):
-		self.wikiconnection.request("GET","/wiki/"+article.getArticleName())
-		articleResponse = self.wikiconnection.getresponse()
-		
-		print(article.getArticleName(),"request status:",articleResponse.status)
-		
-		if(articleResponse.status!=200):
-			print("Error!")
-			quit(1)
-		
-		return articleResponse.read()
-	
-	def getArticle(self,name,links=list(),download=False):
-		return self.addArticle(name,links,download)
+	def getArticle(self,name,links=list()):
+		return self.addArticle(name,links)
 	def getArticlesList(self):
 		return self.articlesList
-	def addArticle(self,name,links=list(),download=True):
+	def addArticle(self,name,links=list()):
 		for article in self.articlesList:
 			if(article != None):
 				if(article.getArticleName() == name):
 					return article
-		self.articlesList.append(Article(name,links,download))
+		self.articlesList.append(Article(name,links))
 		return self.articlesList[len(self.articlesList)-1]
-	
-	def deserialize(self):
-		f = open("db.json","r")
-		def __hook_hook(dct):
-			ArticlesController.getInstance().__json_hook_ArticleObject(dct)
-		json.load(f, object_hook=__hook_hook)
-	def __json_hook_ArticleObject(self,dct):
-		if 'Article' in dct:
-			ArticlesController.getInstance().addArticle(dct['Article'], dct['links'], False)
-		return dct
-	def serialize(self):
-		class ArticleEncoder(json.JSONEncoder):
-			def default(self, obj):
-				if isinstance(obj, Article):
-					#import pdb; pdb.set_trace()
-					if(len(obj.getLinkedArticlesNames())>0):
-						return {"Article":obj.getArticleName(), "links":obj.getLinkedArticlesNames()}
-				return json.JSONEncoder.default(self, obj)
-		out=ArticleEncoder().encode(self.articlesList)
-		f = open("db.json", "w")
-		f.write(out)
 
 Application().run()
