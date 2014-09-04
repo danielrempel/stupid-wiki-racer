@@ -81,9 +81,9 @@ class Article:
 		wikiconnection = HTTPConnection("en.wikipedia.org")
 		wikiconnection.request("GET","/wiki/"+self.articleName)
 		articleResponse = wikiconnection.getresponse()
-		print(self.articleName,"request status:",articleResponse.status)
+		#print(self.articleName,"request status:",articleResponse.status)
 		if(articleResponse.status!=200):
-			print("Error!")
+			print("Error! Article response status is", articleResponse.status)
 			quit(1)
 		articleText = articleResponse.read()
 		
