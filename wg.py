@@ -55,7 +55,7 @@ class Application:
 		
 		for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
 			if(article == dst):
-				print(myroute, src,"after",depth,"articles")
+				print(myroute, dst,"after",depth,"articles")
 				self.stopRunning()
 				return
 		
