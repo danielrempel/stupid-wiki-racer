@@ -1,4 +1,4 @@
-WikiGamer
+WikiGamer  
 A python script to perform wiki-racing in the English Wikipedia.  
   
 There are two variations of the script:
