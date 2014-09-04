@@ -26,12 +26,11 @@ class Application:
 		
 		srcArticleName = sys.argv[1].replace(" ","_")
 		dstArticleName = sys.argv[2].replace(" ","_")
-		srcArticle = ArticlesController.getInstance().addArticle(srcArticleName)
-		dstArticle = ArticlesController.getInstance().addArticle(dstArticleName)
+		#srcArticle = ArticlesController.getInstance().addArticle(srcArticleName)
+		#dstArticle = ArticlesController.getInstance().addArticle(dstArticleName)
 		
 		i=0
 		print("iteration", i+1,"staring")
-	#	while(not self.search(srcArticle, i, dstArticle)):
 		while(not self.search(srcArticleName,i,dstArticleName)):
 			i+=1
 			print("iteration", i+1,"staring")
@@ -39,40 +38,22 @@ class Application:
 		print()
 	
 	def search(self, src, depth, dst):
+		#print("Check ", src)
 		ArticlesController.getInstance().getArticle(src).populateArticle()
-		#if(depth == 0):
-		#	if( ArticlesController.getInstance().getArticle(src).isLinkedTo(ArticlesController.getInstance().getArticle(dst)) ):
-		#		print(dst)
-		#		return True
-		#	else:
-		#		return False
-		if( ArticlesController.getInstance().getArticle(src).isLinkedTo(ArticlesController.getInstance().getArticle(dst)) ):
-			print(dst)
-			return True
-			
+		#if( ArticlesController.getInstance().getArticle(src).isLinkedTo(ArticlesController.getInstance().getArticle(dst)) ):
+		#	print(dst)
+		#	return True
 		for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
-			if(self.search(article,depth-1,dst) == True):
+			#print("Compare", article,"to",dst,"(",src,")")
+			if(article == dst):
 				print(article)
 				return True
+		if(depth>0):
+			for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
+				if(self.search(article,depth-1,dst) == True):
+					print(article)
+					return True
 		return False
-				
-	#def search(self, articleSource, depthLeft, targetArticle):
-	#	print("Search from",articleSource.getArticleName(),"depth left",depthLeft)
-	#	if(depthLeft == 0):
-	#		#import pdb; pdb.set_trace()
-	#		if(articleSource.isLinkedTo(targetArticle)):
-	#			print(targetArticle.getArticleName())
-	#			return True
-	#		else:
-	#			return False
-	#	if(articleSource.isLinkedTo(targetArticle)):
-	#		print(targetArticle.getArticleName())
-	#		return True
-	#	for linked in articleSource.getLinkedArticlesNN():
-	#		print("Searching in",linked.getArticleName(),"..")
-	#		if(self.search(linked,depthLeft-1,targetArticle) == True):
-	#			print(linked.getArticleName())
-	#			return True
 
 class Article:
 	def __init__(self,articleName,articleLinks=list(),download=True):
@@ -81,11 +62,11 @@ class Article:
 		self.populated = False
 		if(download):
 			self.populateArticle()
-		else:
-			self.populated=True
+		if(len(self.articleLinks)>0 and not download):
+			self.populated = True
 	def populateArticle(self):
-		if(self.populated):
-			return
+		#if(self.populated):
+		#	return
 		articleText = ArticlesController.getInstance().downloadText(self)
 		
 		class ArticleParser(HTMLParser):
@@ -142,8 +123,6 @@ class Article:
 				return False
 		self.articleLinks.append(otherArticleName)
 		return True
-	def serialize(self):
-		return json.JSONEncoder().encode({"Article" : self.articleName,"links" : self.articleLinks})
 
 class ArticlesController:
 	__instance = None
@@ -194,9 +173,10 @@ class ArticlesController:
 		class ArticleEncoder(json.JSONEncoder):
 			def default(self, obj):
 				if isinstance(obj, Article):
-					return {"Article":obj.getArticleName(), "links":obj.getLinkedArticlesNames()}
+					#import pdb; pdb.set_trace()
+					if(len(obj.getLinkedArticlesNames())>0):
+						return {"Article":obj.getArticleName(), "links":obj.getLinkedArticlesNames()}
 				return json.JSONEncoder.default(self, obj)
-
 		out=ArticleEncoder().encode(self.articlesList)
 		f = open("db.json", "w")
 		f.write(out)
