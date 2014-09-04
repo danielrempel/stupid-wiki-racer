@@ -37,13 +37,17 @@ class Application:
 			t.daemon = True
 			t.start()
 			threads.append(t)
-		
-		#self.queue.join()
+
 		for thread in threads:
 			thread.join()
 		print("After checking",ArticlesController.getInstance().getArticlesCheckedCount(),"articles")
 	
 	def search(self, src, depth, dst, route=list()):
+		if(ArticlesController.getInstance().getArticle(src).isChecked()):
+			return
+		else:
+			ArticlesController.getInstance().getArticle(src).wasChecked()
+		
 		if(len(route)>0):
 			print("from", route[len(route)-1],"searching", src,"to",dst)
 		else:

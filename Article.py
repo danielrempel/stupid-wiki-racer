@@ -7,6 +7,8 @@ class Article:
 		self.articleName = articleName
 		self.articleLinks = articleLinks
 		self.populateArticle()
+		
+		self.checked=False
 	def populateArticle(self):
 		wikiconnection = HTTPConnection("en.wikipedia.org")
 		wikiconnection.request("GET","/wiki/"+self.articleName)
@@ -48,6 +50,11 @@ class Article:
 		
 		articleParser = ArticleParser(self)
 		articleParser.feed(articleText.decode("utf-8"))
+
+	def wasChecked(self):
+		self.checked=True
+	def isChecked(self):
+		return self.checked
 
 	def getArticleName(self):
 		return self.articleName
