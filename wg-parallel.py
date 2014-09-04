@@ -49,9 +49,9 @@ class Application:
 			ArticlesController.getInstance().getArticle(src).wasChecked()
 		
 		if(len(route)>0):
-			print("from", route[len(route)-1],"searching", src,"to",dst)
+			print("Level",depth,"from", route[len(route)-1],"searching", src,"to",dst)
 		else:
-			print("searching", src,"to",dst)
+			print("Level",depth,"searching", src,"to",dst)
 		
 		myroute = route[:]
 		myroute.append(src)
