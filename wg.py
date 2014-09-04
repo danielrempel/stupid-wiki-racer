@@ -29,7 +29,7 @@ class Application:
 		srcArticleName = sys.argv[1].replace(" ","_")
 		dstArticleName = sys.argv[2].replace(" ","_")
 
-		self.queue.put( {"src":srcArticleName, "depth":1, "dst":dstArticleName,"route":list()} )
+		self.queue.put( {"src":srcArticleName, "depth":0, "dst":dstArticleName,"route":list()} )
 		
 		num_worker_threads = 5
 		threads=list()
@@ -44,20 +44,23 @@ class Application:
 			thread.join()
 	
 	def search(self, src, depth, dst, route=list()):
-		print("searching", src,"to",dst)
+		if(len(route)>0):
+			print("from", route[len(route)-1],"searching", src,"to",dst)
+		else:
+			print("searching", src,"to",dst)
 		
 		myroute = route[:]
+		#myroute = copy.deepcopy(route)
 		myroute.append(src)
 		
 		for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
 			if(article == dst):
-				print(myroute, article)
+				print(myroute, src,"after",depth,"articles")
 				self.stopRunning()
 				return
 		
-		if(depth>0):
-			for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
-				self.queue.put( {"src":article, "depth":depth-1, "dst":dst,"route":myroute} )
+		for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
+			self.queue.put( {"src":article, "depth":depth+1, "dst":dst,"route":myroute} )
 
 	def worker(self):
 		print("Worker ready")
