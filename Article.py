@@ -39,12 +39,8 @@ class Article:
 				#print("cleanLink: ", link, " —> ", linkCleaner.findall(link)[0])
 				return linkCleaner.findall(link)[0]
 			def checkLink(self,link):
-				if(link == "Special:Random"):
-					return False
-				specialRE = re.compile("Special:[A-Za-z0-9;!@#$%^&*()_+=.,/ -]*")
-				fileRE = re.compile("File:[A-Za-z0-9;!@#$%^&*()_+=.,/ -]*")
-				wikimediaRE = re.compile("Wikimedia:[A-Za-z0-9;!@#$%^&*()_+=.,/ -]*")
-				if(specialRE.match(link) or fileRE.match(link) or wikimediaRE.match(link)):
+				specialRE = re.compile("(Special|Help|File|Portal|Wikipedia|Template|Template_talk|Talk):[A-Za-z0-9;!@#$%^&*()_+=.,/ -]*")
+				if(specialRE.match(link)):
 					return False
 				return not link == self.parentArticle.getArticleName()
 		
