@@ -6,6 +6,8 @@ from queue import Queue,Empty
 from threading import Thread
 from Article import Article
 from ArticlesController import ArticlesController
+from StatisticsModule import StatisticsModule
+import atexit
 
 class Application:
 	
@@ -25,6 +27,8 @@ class Application:
 		if(len(sys.argv)<3):
 			quit(1)
 		
+		atexit.register( lambda : print("After checking",StatisticsModule.getInstance().getArticlesSearched(),"articles and", StatisticsModule.getInstance().getLinksSearched(), "links") )
+		
 		srcArticleName = sys.argv[1].replace(" ","_")
 		dstArticleName = sys.argv[2].replace(" ","_")
 
@@ -40,13 +44,16 @@ class Application:
 
 		for thread in threads:
 			thread.join()
-		print("After checking",ArticlesController.getInstance().getArticlesCheckedCount(),"articles")
+		
+		StatisticsModule.getInstance().getQueue().join()
 	
 	def search(self, src, depth, dst, route=list()):
 		if(ArticlesController.getInstance().getArticle(src).isChecked()):
 			return
 		else:
 			ArticlesController.getInstance().getArticle(src).wasChecked()
+		
+		StatisticsModule.getInstance().addArticlesSearched(1)
 		
 		if(len(route)>0):
 			print("Level",depth,"from", route[len(route)-1],"searching", src,"to",dst)
@@ -57,6 +64,7 @@ class Application:
 		myroute.append(src)
 		
 		for article in ArticlesController.getInstance().getArticle(src).getLinkedArticlesNames():
+			StatisticsModule.getInstance().addLinksSearched(1)
 			if(article == dst):
 				print(myroute, dst,"after",depth,"articles")
 				self.stopRunning()
