@@ -13,7 +13,6 @@ class Article:
 		wikiconnection = HTTPConnection("en.wikipedia.org")
 		wikiconnection.request("GET","/wiki/"+self.articleName)
 		articleResponse = wikiconnection.getresponse()
-		#print(self.articleName,"request status:",articleResponse.status)
 		if(articleResponse.status!=200):
 			print("Error! Article response status is", articleResponse.status)
 			quit(1)
@@ -30,13 +29,10 @@ class Article:
 						if(attr[0] == "href"):
 							if(self.articleLinkPattern.match(attr[1])):
 								cleanLink = self.clearLink(attr[1])
-								#ar = ArticlesRegistry.getInstance()
-								#self.parentArticle.addLinkedArticle(ar.getArticle( cleanLink ))
 								if(self.checkLink(cleanLink)):
 									self.parentArticle.addLinkTo(cleanLink)
 			def clearLink(self,link):
 				linkCleaner = re.compile("/wiki/([A-Za-z0-9:;!@$%^&*()_+=.,/ -]*)[A-Za-z0-9:;!@#$%^&*()_+=.,/ -]*")
-				#print("cleanLink: ", link, " —> ", linkCleaner.findall(link)[0])
 				return linkCleaner.findall(link)[0]
 			def checkLink(self,link):
 				specialRE = re.compile("(Special|Help|File|Portal|Wikipedia|Template|Template_talk|Talk):[A-Za-z0-9;!@#$%^&*()_+=.,/ -]*")
