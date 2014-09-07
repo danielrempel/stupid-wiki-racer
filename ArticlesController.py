@@ -10,8 +10,8 @@ class ArticlesController:
 		
 	def __init__(self):
 		self.articlesList=list()
-		
 		self.articlesChecked=0
+		
 	def getArticle(self,name):
 		return self.addArticle(name)
 	def getArticlesList(self):
