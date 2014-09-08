@@ -79,7 +79,7 @@ class Application:
 		print("Worker ready")
 		while self.running:
 			try:
-				task = self.queue.get(True,2)
+				task = self.queue.get(True,1)
 				self.search(task['src'],task['depth'],task['dst'],task['route'])
 				self.queue.task_done()
 			except Empty:
