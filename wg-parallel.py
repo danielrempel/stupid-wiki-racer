@@ -7,7 +7,7 @@ from threading import Thread
 from Article import Article
 from ArticlesController import ArticlesController
 from StatisticsModule import StatisticsModule
-import atexit
+import time
 
 class Application:
 	
@@ -27,7 +27,7 @@ class Application:
 		if(len(sys.argv)<3):
 			quit(1)
 		
-		atexit.register( lambda : print("After checking",StatisticsModule.getInstance().getArticlesSearched(),"articles and", StatisticsModule.getInstance().getLinksSearched(), "links") )
+		start_time = time.time()
 		
 		srcArticleName = sys.argv[1].replace(" ","_")
 		dstArticleName = sys.argv[2].replace(" ","_")
@@ -46,6 +46,8 @@ class Application:
 			thread.join()
 		
 		StatisticsModule.getInstance().getQueue().join()
+		
+		print("--- {} threads : {} articles : {} links : {} seconds ---".format(num_worker_threads, StatisticsModule.getInstance().getArticlesSearched(), StatisticsModule.getInstance().getLinksSearched(), time.time() - start_time))
 	
 	def search(self, src, depth, dst, route=list()):
 		if(ArticlesController.getInstance().getArticle(src).isChecked()):
